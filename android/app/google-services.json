@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "254365526676",
+    "project_id": "localscore-dfa85",
+    "storage_bucket": "localscore-dfa85.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:254365526676:android:fc20954779c38606c1a281",
+        "android_client_info": {
+          "package_name": "com.example.localscore"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwkuswppHFChU1rSaGUtw_pWdoen02zfA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

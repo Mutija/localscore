@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
-import 'tournament.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-void main() {
+import 'firebase_options.dart';
+
+import 'addTournament.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   runApp(const MyApp());
 }
 
@@ -13,7 +22,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'LocalScore',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Color.fromARGB(255, 183, 22, 22)),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color.fromARGB(255, 183, 22, 22),
+        ),
       ),
       home: const MyHomePage(title: 'Turniri'),
     );
@@ -30,21 +41,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final List<Tournament> tournaments = [
-    const Tournament(
-      id: '1',
-      name: 'Turnir 1',
-      location: 'Split',
-      sport: 'Nogomet',
-    ),
-    const Tournament(
-      id: '2',
-      name: 'Turnir 2',
-      location: 'Zagreb',
-      sport: 'Kosarka',
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,20 +48,57 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: ListView.builder(
-        itemCount: tournaments.length,
-        itemBuilder: (context, index) {
-          final tournament = tournaments[index];
-          return ListTile(
-            leading: const Icon(Icons.emoji_events),
-            title: Text(tournament.name),
-            subtitle: Text(tournament.location),
-            trailing: Text(tournament.sport),
+
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('tournaments')
+            .snapshots(),
+
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final tournaments = snapshot.data!.docs;
+
+          return ListView.builder(
+            itemCount: tournaments.length,
+
+            itemBuilder: (context, index) {
+              final document = tournaments[index];
+
+              final data = document.data() as Map<String, dynamic>;
+
+              final currentTeams = data['currentTeams'] as int;
+              final maxTeams = data['maxTeams'] as int;
+
+              final registrationDeadLine =
+                  (data['registrationDeadLine'] as Timestamp).toDate();
+
+              return ListTile(
+                //onTap: (),
+
+                leading: const Icon(Icons.emoji_events),
+                title: Text(data['name']),
+                subtitle: Text(data['location']),
+                trailing: Text(data['sport']),
+              );
+            },
           );
         },
       ),
+
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddTournament()),
+          );
+        },
         tooltip: 'Dodaj turnir',
         child: const Icon(Icons.add),
       ),
